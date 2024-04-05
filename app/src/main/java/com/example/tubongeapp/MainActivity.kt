@@ -3,23 +3,19 @@ package com.example.tubongeapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.tubongeapp.ui.theme.TubongeAppTheme
+import com.example.tubongeapp.ui.addeditpost.NewPost
 import com.example.tubongeapp.ui.tubongeui.PostList
-import com.example.tubongeapp.ui.tubongeui.PostListItem
-import com.example.tubongeapp.ui.tubongeui.TubongeViewModel
+import com.example.tubongeapp.utils.Routes
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -33,7 +29,23 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PostList()
+                    val navController = rememberNavController()
+
+                    NavHost(
+                        navController = navController,
+                        startDestination = Routes.POSTLIST.name
+                    ) {
+                        composable(route = Routes.POSTLIST.name) {
+                            PostList(navigate = { navController.navigate(it.route) })
+                        }
+
+                        composable(route = Routes.ADDEDITPOST.name) {
+                            NewPost(
+                                popBackStack = {navController.popBackStack()}
+                            )
+                        }
+
+                    }
                 }
             }
         }

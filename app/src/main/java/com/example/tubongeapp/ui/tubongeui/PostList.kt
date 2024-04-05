@@ -11,21 +11,43 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tubongeapp.ui.TopAppBarItem
+import com.example.tubongeapp.utils.TubongeEvents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostList(
-    viewModel: TubongeViewModel = hiltViewModel()
+    viewModel: TubongeViewModel = hiltViewModel(),
+    navigate: (TubongeEvents.Navigate) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState()}
+
+    LaunchedEffect(key1 = 1) {
+        viewModel.uiEvents.collect{event ->
+            when(event){
+                is TubongeEvents.Navigate -> navigate(event)
+                is TubongeEvents.Snackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = event.action
+                    )
+                }
+                else -> Unit
+            }
+        }
+    }
 
     Scaffold(
         topBar = {TopAppBarItem(
@@ -33,13 +55,13 @@ fun PostList(
             scrollBehavior = scrollBehavior,
             onSettings = {}
         )},
-        bottomBar = {},
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         floatingActionButton = {
-            FloatingActionButton(onClick = { /*TODO*/ }) {
+            FloatingActionButton(onClick = { viewModel.onEvent(PostListEvents.NewPostClicked) }) {
                 Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Add Post")
-        }}
+        }},
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) {padding ->
 
         LazyColumn(
